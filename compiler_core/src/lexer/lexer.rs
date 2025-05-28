@@ -1,5 +1,6 @@
 extern crate thiserror;
-use std::io;
+use core::num;
+use std::{f32::consts::E, io, os::raw};
 
 use thiserror::Error;
 
@@ -12,6 +13,10 @@ pub enum LexerError {
     MissingExpectedSymbol {
         expected: TokenType,
         found: Token
+    },
+    #[error("No se puede crear un numero debido a que el simbolo {raw:?} no es un simbolo numerico valido")]
+    InvalidNumeric {
+        raw: String,
     },
     #[error("No se puedo encontrar el simbolo abierto {open:?} para el simbolo cerrado {symbol:?}")]
     MissbalancedSymbols {
@@ -31,6 +36,16 @@ pub struct Punctuation {
     pub kind: PunctuationKind,
 }
 #[derive(Debug, Clone, PartialEq)]
+pub enum NumericHint {
+    Integer,
+    Float,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct Numeric {
+    pub raw: String,
+    pub kind: NumericHint,
+}
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     EOF,
 
@@ -38,12 +53,13 @@ pub enum TokenType {
 
     Operator(String),
 
-    Identifier(String),
+    Identificador(String),
 
     Char(char),
 
-    Numeric(String),
+    Numero{raw: String, kind: NumericHint},
 
+    Cadena(String),
     Unknown(String),
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -114,6 +130,81 @@ impl<'a> Lexer<'a> {
                 })
         }
     }
+    fn consume_digit(&mut self, raw:&String) -> Result<char, LexerError> {
+        match self.chars.next() {
+            Some(c) if !c.is_digit(10) => {
+                Err(LexerError::InvalidNumeric { raw:raw.to_string() })
+            },
+            Some(c) => Ok(c),
+            None => {Err(LexerError::InvalidNumeric { raw:raw.to_string()})},
+        }
+    }
+    fn parse_number(&mut self, c: char) -> Result<TokenType, LexerError> {
+        let mut seen_dot = false;
+        let mut seen_e =false;
+        let mut number = c.to_string();
+        loop {
+            match self.chars.peek() {
+                Some(&next_char) if next_char.is_digit(10) => {
+                    number.push(self.consume_char().unwrap());
+                },
+                Some(&'.') if !seen_dot && !seen_e => {
+                    seen_dot = true;
+                    number.push(self.consume_char().unwrap());
+                },
+                Some(&'e') | Some(&'E') if !seen_e => {
+                    seen_e = true;
+                    number.push(self.consume_char().unwrap());
+                    if let Some(&next_char) = self.chars.peek() {
+                        if next_char == '+' || next_char == '-' {
+                            number.push(self.consume_char().unwrap());
+                            self.consume_char();
+                        }
+                    }
+                    self.consume_digit(&number)?;
+                },
+                Some(&next_char) if next_char.is_alphanumeric() => {
+                    number.push(self.consume_char().unwrap());
+                    return Err(LexerError::InvalidNumeric {
+                        raw: number + &next_char.to_string(),
+                    });
+                },
+                _ => { 
+                    break Ok(TokenType::Numero {
+                        raw: number,
+                        kind: if seen_dot || seen_e {
+                            NumericHint::Float
+                        } else {
+                            NumericHint::Integer
+                        }
+                    })
+                }
+            }
+        }
+       
+    }
+
+    fn parse_string(&mut self,c:char) -> Result<TokenType, LexerError> {
+        let mut string = String::new();
+        loop {
+            match self.chars.next() {
+                Some('"') => break Ok(TokenType::Cadena(string)),
+                Some('\\') => {
+                    if let Some(escaped_char) = self.chars.next() {
+                        string.push(escaped_char);
+                    } else {
+                        return Err(LexerError::UnknwonSymbol {
+                            symbol: "Unterminated string literal".to_string(),
+                        });
+                    }
+                },
+                Some(c) => string.push(c),
+                None => return Err(LexerError::UnknwonSymbol {
+                    symbol: "Unterminated string literal".to_string(),
+                }),
+            }
+        }
+    }
     fn transform_to_type(&mut self,c: char) -> Result<TokenType, LexerError> {
         match c {
             '(' | '[' => Ok(TokenType::Punctuation {
@@ -124,7 +215,20 @@ impl<'a> Lexer<'a> {
                 raw: c,
                 kind: PunctuationKind::Close(self.pop_close(&c)?),
             }),
-           
+            '0' ..= '9' => self.parse_number(c),
+            '"' => { self.parse_string(c) 
+            },
+            c if c.is_alphabetic() || c == '_' => {
+                let mut identifier = c.to_string();
+                while let Some(&next_char) = self.chars.peek() {
+                    if next_char.is_alphanumeric() || next_char == '_' {
+                        identifier.push(self.consume_char().unwrap());
+                    } else {
+                        break;
+                    }
+                }
+                Ok(TokenType::Identificador(identifier))
+            },
             _ => Err(LexerError::UnknwonSymbol {
                 symbol: c.to_string(),
             }),

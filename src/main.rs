@@ -1,7 +1,7 @@
 extern crate compiler_core;
 use compiler_core::lexer::lexer::*;
 fn main(){
-    let mut lexer = Lexer::new("(())(()[]]");
+    let mut lexer = Lexer::new(r#"((152..2))(()[]] id2 = "Mi nombre es Levi" "#);
     loop {
     
         match lexer.next_token() {
@@ -13,5 +13,5 @@ fn main(){
                 println!("Error: {:?}", e),
         }
     }
-    println!("Hello, world!");
+   
 }
