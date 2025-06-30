@@ -1,0 +1,30 @@
+digraph AST {
+  node [shape=rectangle, style="rounded,filled", fillcolor=lightblue];
+  rankdir=TB;
+
+  node_0 [label="Program", fillcolor="lightgray"];
+  node_1 [label="ExpressionStatement", fillcolor="wheat"];
+  node_2 [label="Assignment\n=", fillcolor="orange"];
+  node_3 [label="Identifier\nname", fillcolor="lightcyan"];
+  node_4 [label="String\n\"John\"", fillcolor="lightyellow"];
+  node_2 -> node_3 [label="left"];
+  node_2 -> node_4 [label="right"];
+  node_1 -> node_2 [label="expr"];
+  node_0 -> node_1 [label="stmt0"];
+  node_5 [label="ExpressionStatement", fillcolor="wheat"];
+  node_6 [label="Assignment\n=", fillcolor="orange"];
+  node_7 [label="Identifier\nage", fillcolor="lightcyan"];
+  node_8 [label="Number\n25 (int)", fillcolor="lightgreen"];
+  node_6 -> node_7 [label="left"];
+  node_6 -> node_8 [label="right"];
+  node_5 -> node_6 [label="expr"];
+  node_0 -> node_5 [label="stmt1"];
+  node_9 [label="ExpressionStatement", fillcolor="wheat"];
+  node_10 [label="FunctionCall\nprint", fillcolor="lightsteelblue"];
+  node_11 [label="Identifier\nname", fillcolor="lightcyan"];
+  node_10 -> node_11 [label="arg0"];
+  node_12 [label="Identifier\nage", fillcolor="lightcyan"];
+  node_10 -> node_12 [label="arg1"];
+  node_9 -> node_10 [label="expr"];
+  node_0 -> node_9 [label="stmt2"];
+}

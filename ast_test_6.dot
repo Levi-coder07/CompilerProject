@@ -1,0 +1,34 @@
+digraph AST {
+  node [shape=rectangle, style="rounded,filled", fillcolor=lightblue];
+  rankdir=TB;
+
+  node_0 [label="Program", fillcolor="lightgray"];
+  node_1 [label="ExpressionStatement", fillcolor="wheat"];
+  node_2 [label="Assignment\n=", fillcolor="orange"];
+  node_3 [label="Identifier\nx", fillcolor="lightcyan"];
+  node_4 [label="Number\n10 (int)", fillcolor="lightgreen"];
+  node_2 -> node_3 [label="left"];
+  node_2 -> node_4 [label="right"];
+  node_1 -> node_2 [label="expr"];
+  node_0 -> node_1 [label="stmt0"];
+  node_5 [label="ExpressionStatement", fillcolor="wheat"];
+  node_6 [label="Assignment\n=", fillcolor="orange"];
+  node_7 [label="Identifier\ny", fillcolor="lightcyan"];
+  node_8 [label="Number\n20 (int)", fillcolor="lightgreen"];
+  node_6 -> node_7 [label="left"];
+  node_6 -> node_8 [label="right"];
+  node_5 -> node_6 [label="expr"];
+  node_0 -> node_5 [label="stmt1"];
+  node_9 [label="ExpressionStatement", fillcolor="wheat"];
+  node_10 [label="Assignment\n=", fillcolor="orange"];
+  node_11 [label="Identifier\nresult", fillcolor="lightcyan"];
+  node_12 [label="BinaryOp\n+", fillcolor="lightcoral"];
+  node_13 [label="Identifier\nx", fillcolor="lightcyan"];
+  node_14 [label="Identifier\ny", fillcolor="lightcyan"];
+  node_12 -> node_13 [label="left"];
+  node_12 -> node_14 [label="right"];
+  node_10 -> node_11 [label="left"];
+  node_10 -> node_12 [label="right"];
+  node_9 -> node_10 [label="expr"];
+  node_0 -> node_9 [label="stmt2"];
+}

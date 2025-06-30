@@ -1,6 +1,5 @@
 extern crate thiserror;
-use core::num;
-use std::{f32::consts::E, io, os::raw};
+use std::io;
 
 use thiserror::Error;
 
@@ -184,7 +183,7 @@ impl<'a> Lexer<'a> {
        
     }
 
-    fn parse_string(&mut self,c:char) -> Result<TokenType, LexerError> {
+    fn parse_string(&mut self, _c: char) -> Result<TokenType, LexerError> {
         let mut string = String::new();
         loop {
             match self.chars.next() {
@@ -207,16 +206,33 @@ impl<'a> Lexer<'a> {
     }
     fn transform_to_type(&mut self,c: char) -> Result<TokenType, LexerError> {
         match c {
-            '(' | '[' => Ok(TokenType::Punctuation {
+            '(' | '[' | '{' => Ok(TokenType::Punctuation {
                 raw: c,
                 kind: PunctuationKind::Open(self.push_open(&c)),
             }),
-            ')' | ']' => Ok(TokenType::Punctuation {
+            ')' | ']' | '}' => Ok(TokenType::Punctuation {
                 raw: c,
                 kind: PunctuationKind::Close(self.pop_close(&c)?),
             }),
+            ',' | ';' => Ok(TokenType::Punctuation {
+                raw: c,
+                kind: PunctuationKind::Separator,
+            }),
             '0' ..= '9' => self.parse_number(c),
-            '"' => { self.parse_string(c) 
+            '"' => { self.parse_string(c) },
+            '+' | '-' | '*' | '/' | '=' | '<' | '>' | '!' | '&' | '|' => {
+                // Handle single and multi-character operators
+                let mut operator = c.to_string();
+                if let Some(&next_char) = self.chars.peek() {
+                    match (c, next_char) {
+                        ('=', '=') | ('!', '=') | ('<', '=') | ('>', '=') |
+                        ('&', '&') | ('|', '|') | ('+', '+') | ('-', '-') => {
+                            operator.push(self.consume_char().unwrap());
+                        },
+                        _ => {}
+                    }
+                }
+                Ok(TokenType::Operator(operator))
             },
             c if c.is_alphabetic() || c == '_' => {
                 let mut identifier = c.to_string();

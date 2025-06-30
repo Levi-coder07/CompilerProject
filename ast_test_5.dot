@@ -1,0 +1,22 @@
+digraph AST {
+  node [shape=rectangle, style="rounded,filled", fillcolor=lightblue];
+  rankdir=TB;
+
+  node_0 [label="Program", fillcolor="lightgray"];
+  node_1 [label="ExpressionStatement", fillcolor="wheat"];
+  node_2 [label="BinaryOp\n&&", fillcolor="lightcoral"];
+  node_3 [label="BinaryOp\n>", fillcolor="lightcoral"];
+  node_4 [label="Identifier\na", fillcolor="lightcyan"];
+  node_5 [label="Identifier\nb", fillcolor="lightcyan"];
+  node_3 -> node_4 [label="left"];
+  node_3 -> node_5 [label="right"];
+  node_6 [label="BinaryOp\n<=", fillcolor="lightcoral"];
+  node_7 [label="Identifier\nc", fillcolor="lightcyan"];
+  node_8 [label="Identifier\nd", fillcolor="lightcyan"];
+  node_6 -> node_7 [label="left"];
+  node_6 -> node_8 [label="right"];
+  node_2 -> node_3 [label="left"];
+  node_2 -> node_6 [label="right"];
+  node_1 -> node_2 [label="expr"];
+  node_0 -> node_1 [label="stmt0"];
+}
