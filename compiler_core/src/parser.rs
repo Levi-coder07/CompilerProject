@@ -1,7 +1,9 @@
+// Importamos tipos necesarios desde el módulo del lexer y del AST
 use crate::lexer::lexer::{Lexer, TokenType, LexerError, NumericHint, PunctuationKind};
 use crate::ast::ASTNode;
 use thiserror::Error;
 
+// Definimos los distintos tipos de errores que pueden surgir durante el parsing
 #[derive(Error, Debug)]
 pub enum ParseError {
     #[error("Lexer error: {0}")]
@@ -20,12 +22,14 @@ pub enum ParseError {
     InvalidSyntax { message: String },
 }
 
+// Estructura principal del parser, contiene un lexer y el token actual
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
     current_token: Option<TokenType>,
 }
 
 impl<'a> Parser<'a> {
+    /// Crea una nueva instancia del parser a partir de una cadena de entrada
     pub fn new(input: &'a str) -> Result<Parser<'a>, ParseError> {
         let mut lexer = Lexer::new(input);
         let current_token = lexer.next_token().ok();
@@ -35,6 +39,7 @@ impl<'a> Parser<'a> {
         })
     }
     
+    /// Punto de entrada principal del parser. Devuelve un nodo de programa con una lista de sentencias.
     pub fn parse(&mut self) -> Result<ASTNode, ParseError> {
         let mut statements = Vec::new();
         
@@ -56,6 +61,7 @@ impl<'a> Parser<'a> {
         Ok(ASTNode::Program { statements })
     }
     
+    /// Avanza al siguiente token
     fn advance(&mut self) -> Result<(), ParseError> {
         self.current_token = match self.lexer.next_token() {
             Ok(token) => Some(token),
@@ -64,6 +70,7 @@ impl<'a> Parser<'a> {
         Ok(())
     }
     
+    /// Parsea una sentencia de expresión simple
     fn parse_expression_statement(&mut self) -> Result<ASTNode, ParseError> {
         let expr = self.parse_expression()?;
         Ok(ASTNode::ExpressionStatement {
@@ -71,13 +78,16 @@ impl<'a> Parser<'a> {
         })
     }
     
+    /// Parsea una expresión completa (punto de entrada para precedencia)
     fn parse_expression(&mut self) -> Result<ASTNode, ParseError> {
         self.parse_assignment()
     }
     
+    /// Parsea expresiones de asignación (con precedencia más baja)
     fn parse_assignment(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_or()?;
         
+        // Verifica si es una asignación (`=`)
         if let Some(TokenType::Operator(ref op)) = &self.current_token {
             if op == "=" {
                 self.advance()?;
@@ -92,6 +102,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea operaciones OR (`||`)
     fn parse_or(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_and()?;
         
@@ -113,6 +124,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea operaciones AND (`&&`)
     fn parse_and(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_equality()?;
         
@@ -134,6 +146,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea comparaciones de igualdad (`==`, `!=`)
     fn parse_equality(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_comparison()?;
         
@@ -155,6 +168,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea comparaciones relacionales (`<`, `<=`, `>`, `>=`)
     fn parse_comparison(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_addition()?;
         
@@ -176,6 +190,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea operaciones aritméticas de suma y resta
     fn parse_addition(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_multiplication()?;
         
@@ -197,6 +212,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea multiplicación y división
     fn parse_multiplication(&mut self) -> Result<ASTNode, ParseError> {
         let mut left = self.parse_unary()?;
         
@@ -218,6 +234,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
     
+    /// Parsea expresiones unarias (`-`, `!`)
     fn parse_unary(&mut self) -> Result<ASTNode, ParseError> {
         if let Some(TokenType::Operator(ref op)) = &self.current_token {
             if op == "-" || op == "!" {
@@ -234,6 +251,7 @@ impl<'a> Parser<'a> {
         self.parse_primary()
     }
     
+    /// Parsea expresiones primarias: números, cadenas, identificadores, llamadas, paréntesis
     fn parse_primary(&mut self) -> Result<ASTNode, ParseError> {
         match &self.current_token {
             Some(TokenType::Numero { raw, kind }) => {
