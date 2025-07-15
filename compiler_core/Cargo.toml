@@ -8,3 +8,4 @@ path = "src/lib.rs"
 
 [dependencies]
 thiserror = "2.0.12"
+serde = { version = "1.0", features = ["derive"] }

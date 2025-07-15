@@ -1,5 +1,6 @@
 extern crate thiserror;
 use std::io;
+use serde::{Serialize, Deserialize};
 
 use thiserror::Error;
 
@@ -29,22 +30,22 @@ pub enum LexerError {
 }
 
 pub type Token = TokenType;
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Punctuation {
     pub raw: char,
     pub kind: PunctuationKind,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum NumericHint {
     Integer,
     Float,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Numeric {
     pub raw: String,
     pub kind: NumericHint,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TokenType {
     EOF,
 
@@ -61,7 +62,7 @@ pub enum TokenType {
     Cadena(String),
     Unknown(String),
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PunctuationKind {
     Open(BalancingDepthType),
 
