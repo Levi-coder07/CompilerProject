@@ -5,6 +5,7 @@ pub enum ASTNode {
     // Literals
     Number { value: String, is_float: bool },
     String { value: String },
+    Boolean { value: bool },
     Identifier { name: String },
     
     // Binary operations
@@ -53,6 +54,7 @@ impl ASTNode {
         match self {
             ASTNode::Number { .. } => "Number",
             ASTNode::String { .. } => "String",
+            ASTNode::Boolean { .. } => "Boolean",
             ASTNode::Identifier { .. } => "Identifier",
             ASTNode::BinaryOp { .. } => "BinaryOp",
             ASTNode::UnaryOp { .. } => "UnaryOp",
@@ -70,6 +72,7 @@ impl ASTNode {
                 format!("Number\n{} ({})", value, if *is_float { "float" } else { "int" })
             },
             ASTNode::String { value } => format!("String\n\"{}\"", value),
+            ASTNode::Boolean { value } => format!("Boolean\n{}", value),
             ASTNode::Identifier { name } => format!("Identifier\n{}", name),
             ASTNode::BinaryOp { operator, .. } => format!("BinaryOp\n{}", operator),
             ASTNode::UnaryOp { operator, .. } => format!("UnaryOp\n{}", operator),

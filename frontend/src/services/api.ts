@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { TokenizeResponse, ParseResponse, VisualizationResponse, ExampleResponse } from '../types';
+import { TokenizeResponse, ParseResponse, VisualizationResponse, ExampleResponse, SemanticAnalysisResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:3000';
 
@@ -28,6 +28,11 @@ export const compilerApi = {
 
   getExamples: async (): Promise<ExampleResponse> => {
     const response = await apiClient.get('/api/examples');
+    return response.data;
+  },
+
+  semanticAnalysis: async (code: string): Promise<SemanticAnalysisResponse> => {
+    const response = await apiClient.post('/api/semantic-analysis', { code });
     return response.data;
   },
 

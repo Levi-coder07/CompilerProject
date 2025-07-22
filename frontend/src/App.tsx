@@ -2,23 +2,29 @@ import React, { useState, useEffect } from 'react';
 import CodeEditor from './components/CodeEditor';
 import TokenDisplay from './components/TokenDisplay';
 import ASTVisualization from './components/ASTVisualization';
+import SemanticAnalysis from './components/SemanticAnalysis';
 import { compilerApi } from './services/api';
-import { TokenInfo, NodeData, EdgeData, Example } from './types';
+import { TokenInfo, NodeData, EdgeData, Example, SemanticStep, SymbolInfo, TypeCheck } from './types';
 
 function App() {
   const [code, setCode] = useState('x = 5 + 3 * 2');
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
   const [astNodes, setAstNodes] = useState<NodeData[]>([]);
   const [astEdges, setAstEdges] = useState<EdgeData[]>([]);
+  const [semanticSteps, setSemanticSteps] = useState<SemanticStep[]>([]);
+  const [symbolTable, setSymbolTable] = useState<SymbolInfo[]>([]);
+  const [typeChecks, setTypeChecks] = useState<TypeCheck[]>([]);
   const [examples, setExamples] = useState<Example[]>([]);
   const [loading, setLoading] = useState({
     tokens: false,
     ast: false,
+    semantic: false,
     examples: false
   });
   const [error, setError] = useState({
     tokens: null as string | null,
     ast: null as string | null,
+    semantic: null as string | null,
     examples: null as string | null
   });
 
@@ -82,6 +88,24 @@ function App() {
       setError(prev => ({ ...prev, ast: 'Failed to parse code' }));
     } finally {
       setLoading(prev => ({ ...prev, ast: false }));
+    }
+
+    // Semantic analysis
+    setLoading(prev => ({ ...prev, semantic: true }));
+    try {
+      const semanticResponse = await compilerApi.semanticAnalysis(code);
+      if (semanticResponse.success) {
+        setSemanticSteps(semanticResponse.steps);
+        setSymbolTable(semanticResponse.symbol_table);
+        setTypeChecks(semanticResponse.type_checks);
+        setError(prev => ({ ...prev, semantic: null }));
+      } else {
+        setError(prev => ({ ...prev, semantic: semanticResponse.error }));
+      }
+    } catch (err) {
+      setError(prev => ({ ...prev, semantic: 'Failed to perform semantic analysis' }));
+    } finally {
+      setLoading(prev => ({ ...prev, semantic: false }));
     }
   };
 
@@ -147,7 +171,7 @@ function App() {
         </div>
 
         {/* Results */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Tokens */}
           <TokenDisplay
             tokens={tokens}
@@ -161,6 +185,15 @@ function App() {
             edges={astEdges}
             loading={loading.ast}
             error={error.ast}
+          />
+
+          {/* Semantic Analysis */}
+          <SemanticAnalysis
+            steps={semanticSteps}
+            symbolTable={symbolTable}
+            typeChecks={typeChecks}
+            loading={loading.semantic}
+            error={error.semantic}
           />
         </div>
       </div>

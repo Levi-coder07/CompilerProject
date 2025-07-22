@@ -98,7 +98,7 @@ impl GraphvizRenderer {
                 dot.push_str(&format!("  node_{} -> node_{} [label=\"expr\"];\n", node_id, expr_id));
             },
             // Leaf nodes (literals, identifiers) don't have children
-            ASTNode::Number { .. } | ASTNode::String { .. } | ASTNode::Identifier { .. } => {},
+            ASTNode::Number { .. } | ASTNode::String { .. } | ASTNode::Boolean { .. } | ASTNode::Identifier { .. } => {},
         }
         
         node_id
@@ -109,6 +109,7 @@ impl GraphvizRenderer {
         match node {
             ASTNode::Number { .. } => (label, "lightgreen"),
             ASTNode::String { .. } => (label, "lightyellow"),
+            ASTNode::Boolean { .. } => (label, "lightblue"),
             ASTNode::Identifier { .. } => (label, "lightcyan"),
             ASTNode::BinaryOp { .. } => (label, "lightcoral"),
             ASTNode::UnaryOp { .. } => (label, "lightpink"),

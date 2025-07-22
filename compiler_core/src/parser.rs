@@ -265,6 +265,11 @@ impl<'a> Parser<'a> {
                 self.advance()?;
                 Ok(ASTNode::String { value })
             },
+            Some(TokenType::Boolean(value)) => {
+                let value = *value;
+                self.advance()?;
+                Ok(ASTNode::Boolean { value })
+            },
             Some(TokenType::Identificador(name)) => {
                 let name = name.clone();
                 self.advance()?;

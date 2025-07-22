@@ -60,6 +60,9 @@ pub enum TokenType {
     Numero{raw: String, kind: NumericHint},
 
     Cadena(String),
+    
+    Boolean(bool),
+    
     Unknown(String),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -244,7 +247,13 @@ impl<'a> Lexer<'a> {
                         break;
                     }
                 }
-                Ok(TokenType::Identificador(identifier))
+                
+                // Check if it's a boolean literal
+                match identifier.as_str() {
+                    "true" => Ok(TokenType::Boolean(true)),
+                    "false" => Ok(TokenType::Boolean(false)),
+                    _ => Ok(TokenType::Identificador(identifier)),
+                }
             },
             _ => Err(LexerError::UnknwonSymbol {
                 symbol: c.to_string(),

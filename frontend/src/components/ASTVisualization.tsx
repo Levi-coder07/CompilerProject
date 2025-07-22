@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NodeData, EdgeData } from '../types';
 
 interface ASTVisualizationProps {
@@ -10,6 +10,12 @@ interface ASTVisualizationProps {
 
 const ASTVisualization: React.FC<ASTVisualizationProps> = ({ nodes, edges, loading, error }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const modalSvgRef = useRef<SVGSVGElement>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Calculate dynamic height based on tree depth
   const calculateDynamicHeight = () => {
@@ -21,15 +27,40 @@ const ASTVisualization: React.FC<ASTVisualizationProps> = ({ nodes, edges, loadi
 
   const dynamicHeight = calculateDynamicHeight();
 
-  useEffect(() => {
-    if (!svgRef.current || nodes.length === 0) return;
+  // Zoom and pan handlers
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.max(0.5, Math.min(3, zoom * delta));
+    setZoom(newZoom);
+  };
 
-    const svg = svgRef.current;
-    const width = svg.clientWidth;
-    const height = svg.clientHeight;
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const renderSVG = (svgElement: SVGSVGElement, width: number, height: number) => {
     // Clear previous content
-    svg.innerHTML = '';
+    svgElement.innerHTML = '';
 
     // Create a traditional tree layout with dynamic width
     const minWidth = 600;
@@ -49,7 +80,7 @@ const ASTVisualization: React.FC<ASTVisualizationProps> = ({ nodes, edges, loadi
         line.setAttribute('y2', toPos.y.toString());
         line.setAttribute('stroke', '#374151');
         line.setAttribute('stroke-width', '3');
-        svg.appendChild(line);
+        svgElement.appendChild(line);
       }
     });
 
@@ -87,9 +118,27 @@ const ASTVisualization: React.FC<ASTVisualizationProps> = ({ nodes, edges, loadi
       title.textContent = `${node.node_type}: ${node.label}`;
       group.appendChild(title);
 
-      svg.appendChild(group);
+      svgElement.appendChild(group);
     });
-  }, [nodes, edges]);
+  };
+
+  // Render main SVG
+  useEffect(() => {
+    if (!svgRef.current || nodes.length === 0) return;
+    const svg = svgRef.current;
+    const width = svg.clientWidth || Math.max(600, nodes.length * 120);
+    const height = dynamicHeight;
+    renderSVG(svg, width, height);
+  }, [nodes, edges, dynamicHeight]);
+
+  // Render modal SVG
+  useEffect(() => {
+    if (!modalSvgRef.current || nodes.length === 0 || !showModal) return;
+    const svg = modalSvgRef.current;
+    const width = Math.max(800, nodes.length * 150);
+    const height = Math.max(600, dynamicHeight * 1.2);
+    renderSVG(svg, width, height);
+  }, [nodes, edges, dynamicHeight, showModal]);
 
   if (loading) {
     return (
@@ -114,20 +163,115 @@ const ASTVisualization: React.FC<ASTVisualizationProps> = ({ nodes, edges, loadi
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-3">AST Visualization</h3>
-      <div className="text-sm text-gray-600 mb-2">
-        💡 {nodes.length > 3 ? 'Usa scroll horizontal y vertical para navegar por el árbol' : 'Jerarquía del árbol sintáctico'}
+    <>
+      <div className="bg-white p-4 rounded-lg shadow">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold">AST Visualization</h3>
+          {nodes.length > 0 && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+            >
+              🔍 Ver en Pantalla Completa
+            </button>
+          )}
+        </div>
+        <div className="text-sm text-gray-600 mb-2">
+          💡 {nodes.length > 3 ? 'Usa scroll horizontal y vertical para navegar por el árbol' : 'Jerarquía del árbol sintáctico'}
+        </div>
+        <div className="border border-gray-300 rounded-lg overflow-auto bg-gray-50 max-h-80">
+          <svg
+            ref={svgRef}
+            width={Math.max(600, nodes.length * 120)}
+            height={dynamicHeight}
+            className="bg-gray-50"
+          />
+        </div>
       </div>
-             <div className="border border-gray-300 rounded-lg overflow-auto bg-gray-50 max-h-80">
-        <svg
-          ref={svgRef}
-          width={Math.max(600, nodes.length * 120)}
-          height={dynamicHeight}
-          className="bg-gray-50"
-        />
-      </div>
-    </div>
+
+      {/* Modal for full-screen view */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-xl font-semibold">AST Visualization - Pantalla Completa</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+                  className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  disabled={zoom <= 0.5}
+                >
+                  🔍-
+                </button>
+                <span className="text-sm font-mono min-w-[60px] text-center">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button
+                  onClick={() => setZoom(Math.min(3, zoom + 0.1))}
+                  className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  disabled={zoom >= 3}
+                >
+                  🔍+
+                </button>
+                <button
+                  onClick={resetView}
+                  className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  🔄 Reset
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  ✕ Cerrar
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-hidden relative">
+              <div
+                className="w-full h-full overflow-auto cursor-grab active:cursor-grabbing"
+                onWheel={handleWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              >
+                <div
+                  style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transformOrigin: '0 0',
+                    minWidth: '100%',
+                    minHeight: '100%'
+                  }}
+                >
+                  <svg
+                    ref={modalSvgRef}
+                    width={Math.max(800, nodes.length * 150)}
+                    height={Math.max(600, dynamicHeight * 1.2)}
+                    className="block"
+                    style={{ 
+                      background: 'linear-gradient(45deg, #f8fafc 25%, transparent 25%), linear-gradient(-45deg, #f8fafc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f8fafc 75%), linear-gradient(-45deg, transparent 75%, #f8fafc 75%)',
+                      backgroundSize: '20px 20px',
+                      backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50">
+              <div className="text-sm text-gray-600">
+                💡 Usa la rueda del mouse para hacer zoom, arrastra para mover, o usa los controles arriba
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
