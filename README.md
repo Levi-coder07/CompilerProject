@@ -9,7 +9,7 @@ The objective was to build a complete and well-presented basket with food, house
 ![Canasta Navideña - View 1](./IMG_0601.jpeg)
 
 ### View 2
-![Canasta Navideña - View 2](./canasta_2.jpg)
+![Canasta Navideña - View 2](./IMG_0598.jpeg)
 
 > Images correspond to the final canasta used for evaluation.
 
