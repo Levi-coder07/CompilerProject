@@ -1,81 +1,48 @@
-# CompilerProject
+# 🎄 Canasta Navideña – Test Presentation
 
-A Rust-based compiler with lexical analysis, parsing, and AST visualization capabilities.
+This document presents the **Canasta Navideña** assembled as part of an internal company test.
+The objective was to build a complete and well-presented basket with food, household, and festive items.
 
-## Features
+## 📸 Canasta Preview
 
-- **Lexer**: Tokenizes input code including:
-  - Numbers (integers and floats with scientific notation)
-  - Strings with escape sequences
-  - Identifiers
-  - Operators (`=`, `+`, `-`, `*`, `/`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `&&`, `||`)
-  - Punctuation (`()`, `[]`, `{}`, `,`, `;`)
+### View 1
+![Canasta Navideña - View 1](./canasta_1.jpg)
 
-- **Parser**: Builds Abstract Syntax Trees (AST) with support for:
-  - Binary operations with proper operator precedence
-  - Unary operations
-  - Assignment expressions
-  - Function calls
-  - Parenthesized expressions
-  - String and numeric literals
+### View 2
+![Canasta Navideña - View 2](./canasta_2.jpg)
 
-- **AST Visualization**: Generates beautiful tree visualizations using Graphviz:
-  - DOT format files for all parsed expressions
-  - PNG images (when Graphviz is installed)
-  - Color-coded nodes by type
-  - Clear tree structure showing parsing relationships
+> Images correspond to the final canasta used for evaluation.
 
-## Installation
+## 📦 Included Items
 
-1. Install Rust: https://rustup.rs/
-2. Install Graphviz for visualization:
-   ```bash
-   # Windows (using winget)
-   winget install Graphviz
-   
-   # macOS
-   brew install graphviz
-   
-   # Ubuntu/Debian
-   sudo apt install graphviz
-   ```
+### Food & Beverages
+- Panetón
+- Chocolate (Milo)
+- Gelatina
+- Galletas
+- Leche (Gloria)
+- Bebida de almendra (Vio)
+- Conservas
+- Anís
+- Mayonesa
+- Snacks y dulces
 
-## Usage
+### Household Items
+- Detergente
+- Lejía
+- Lavavajilla
+- Esponjas de limpieza
 
-```bash
-# Build the project
-cargo build
+### Presentation
+- Canasta plástica
+- Moño decorativo navideño
 
-# Run with example expressions
-cargo run
-```
+## ⚠️ Issues / Observations
 
-The program will:
-1. Tokenize several test expressions
-2. Parse them into ASTs
-3. Generate DOT files for visualization
-4. Create PNG images (if Graphviz is available)
+- The final cost of the canasta exceeded the target budget by **1 sol**.
+- The total amount reached **S/ 251**.
 
-## Example Expressions
+## ✅ Conclusion
 
-The program tests these expressions:
-- `id2 = "Mi nombre es Levi"` - String assignment
-- `x = 5 + 3 * 2` - Arithmetic with precedence
-- `result = (a + b) * c` - Parenthesized expressions
-- `func(x, y + 1)` - Function calls with arguments
-- `a > b && c <= d` - Logical operations
-
-## Output Files
-
-After running, you'll find:
-- `ast_test_N.dot` - Graphviz DOT format files
-- `ast_test_N.png` - Visual tree representations (if Graphviz installed)
-
-## Architecture
-
-- `src/main.rs` - Main program demonstrating the pipeline
-- `compiler_core/` - Core library with:
-  - `lexer/` - Tokenization logic
-  - `parser.rs` - Recursive descent parser
-  - `ast.rs` - AST node definitions
-  - `graphviz.rs` - Visualization generation
+The canasta provides a **complete and practical selection** of products with a festive presentation.  
+Only a minimal adjustment would be required to strictly meet the defined budget.
