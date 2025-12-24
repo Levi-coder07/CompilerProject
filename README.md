@@ -6,7 +6,7 @@ The objective was to build a complete and well-presented basket with food, house
 ## 📸 Canasta Preview
 
 ### View 1
-![Canasta Navideña - View 1](./canasta_1.jpg)
+![Canasta Navideña - View 1](./IMG_0601.jpeg)
 
 ### View 2
 ![Canasta Navideña - View 2](./canasta_2.jpg)
